@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+venv/
+.pytest_cache/
+test_app.py
+test_local.sh

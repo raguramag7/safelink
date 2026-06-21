@@ -107,7 +107,12 @@ def compute_heuristic_score(fetch: Dict[str, Any], extracted: Dict[str, Any], no
     score += api_penalty  # up to 100
 
     # 2) Redirects
-    redirect_count = max(len(fetch.get("head", {}).get("redirects", [])), len(fetch.get("get", {}).get("redirects", [])))
+    head_dict = fetch.get("head") or {}
+    get_dict = fetch.get("get") or {}
+    redirect_count = max(
+        len(head_dict.get("redirects", []) or []),
+        len(get_dict.get("redirects", []) or [])
+    )
     if redirect_count >= 3:
         score += 12
         explanations.append(f"Redirect chain length {redirect_count} (suspicious)")
@@ -160,7 +165,7 @@ def compute_heuristic_score(fetch: Dict[str, Any], extracted: Dict[str, Any], no
         explanations.append("Using HTTP (not HTTPS)")
 
     # 9) File size weirdness (very small pages pretending to be login)
-    filesize = fetch.get("get", {}).get("filesize") or 0
+    filesize = (fetch.get("get") or {}).get("filesize") or 0
     if filesize < 200 and forms_count > 0:
         score += 8
         explanations.append("Very small page with forms (phishing-like)")

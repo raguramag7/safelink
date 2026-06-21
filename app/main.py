@@ -4,13 +4,25 @@ from app.url_utils import validate_and_normalize
 from app.fetcher import fetch_url_data
 from fastapi import HTTPException
 import os
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from mimetypes import guess_type
 from app.html_parser import extract_html_features
 from app.risk_engine import compute_heuristic_score
 import json, os, time, hashlib
 
 app=FastAPI()
+
+@app.get("/", response_class=HTMLResponse)
+def read_root():
+    static_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html")
+    if not os.path.exists(static_file_path):
+        static_file_path = "static/index.html"
+    try:
+        with open(static_file_path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), status_code=200)
+    except Exception as e:
+        return HTMLResponse(content=f"<h1>SafeLink Scanner</h1><p>Error loading frontend: {str(e)}</p>", status_code=500)
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
